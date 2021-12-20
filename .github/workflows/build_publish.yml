@@ -24,6 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: sed -i -e "s/__TAG__/${GITHUB_SHA}/g" values.yaml
+      - name: add repo
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm repo add codimd https://helm.codimd.dev/
+          kubeconfig: ${{ secrets.KUBECONFIG_RAW }}
+      - name: update repo
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm repo update
+          kubeconfig: ${{ secrets.KUBECONFIG_RAW }}
       - name: install helm chart
         uses: WyriHaximus/github-action-helm3@v2
         with:
