@@ -1,0 +1,36 @@
+name: Build/Publish docker image
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: sed -i -e "s#__TAG__#${GITHUB_SHA}#g" values.yaml
+      - uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm lint
+      - uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm lint --strict
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v1
+      - run: sed -i -e "s/__TAG__/${GITHUB_SHA}/g" values.yaml
+      - name: install helm chart
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm upgrade --install --atomic codimd codimd/codimd --set "postgresql.postgressPassword=${{ secrets.POSTGRES_PASSWORD }},storageClass=longhorn,service.type=ClusterIP,codimd.imageStorePersistentVolume.size=1Gi"
+          kubeconfig: ${{ secrets.KUBECONFIG_RAW }}
+      - name: install ingress
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm upgrade --install --atomic codimd-ingress .
+          kubeconfig: ${{ secrets.KUBECONFIG_RAW }}

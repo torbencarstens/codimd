@@ -1,0 +1,10 @@
+service:
+  name: codimd
+  port: 80
+
+ingress:
+  hosts:
+    - codi.carstens.tech
+  secret: tls-codi
+  issuer: letsencrypt-issuer-http
+  name: codi
