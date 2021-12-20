@@ -1,4 +1,4 @@
-name: Build/Publish docker image
+name: Install helm charts
 
 on:
   push:
